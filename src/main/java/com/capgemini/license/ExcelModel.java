@@ -10,6 +10,9 @@ import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -23,7 +26,14 @@ public class ExcelModel {
     /**
      *
      */
+    private static final String PLUG_INS = "Plug-ins";
+
+    /**
+     *
+     */
     private static final String MAIN_APPLICATIONS = "Main Applications";
+
+    private static final String EMBEDDED_COMPONENTS = "Embedded Components";
 
     /**
      *
@@ -40,6 +50,10 @@ public class ExcelModel {
 
     private List<String> plugIns;
 
+    private FormulaEvaluator evaluator;
+
+    private DataFormatter formatter;
+
     public ExcelModel() {
         mainApplications = new ArrayList<String>();
         embeddedComponents = new ArrayList<String>();
@@ -55,7 +69,7 @@ public class ExcelModel {
     }
 
     /**
-     *
+     * Reads every content of an excel file
      */
     public void readExcelData() {
         try {
@@ -65,6 +79,9 @@ public class ExcelModel {
             Sheet datatypeSheet = workbook.getSheetAt(0);
             Iterator<Row> iterator = datatypeSheet.iterator();
 
+            evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            formatter = new DataFormatter(true);
+
             while (iterator.hasNext()) {
 
                 Row currentRow = iterator.next();
@@ -73,8 +90,6 @@ public class ExcelModel {
                 while (cellIterator.hasNext()) {
 
                     Cell currentCell = cellIterator.next();
-                    // getCellTypeEnum shown as deprecated for version 3.15
-                    // getCellTypeEnum ill be renamed to getCellType starting from version 4.0
                     String cellValue = convertCellValueToString(currentCell);
                     updateModel(cellValue, cellIterator, iterator);
                 }
@@ -89,9 +104,11 @@ public class ExcelModel {
     }
 
     /**
+     * Converts any cell value to string
      * @param currentCell
      */
     private String convertCellValueToString(Cell currentCell) {
+
         if (currentCell.getCellTypeEnum() == CellType.STRING) {
             System.out.print(currentCell.getStringCellValue() + "--");
             return currentCell.getStringCellValue();
@@ -99,11 +116,42 @@ public class ExcelModel {
             System.out.print(currentCell.getNumericCellValue() + "--");
             String returnValue = String.valueOf(currentCell.getNumericCellValue());
             return returnValue;
+        } else if (currentCell.getCellTypeEnum() == CellType.FORMULA) {
+            convertFormulaValueToString(currentCell);
         }
         return "BLANK";
     }
 
-    // updateModel(currentCell.getStringCellValue(), cellIterator, iterator);
+    /**
+     * Checks which kind of formula value is retrieved and converts it to a string
+     * @param currentCell
+     */
+    private String convertFormulaValueToString(Cell currentCell) {
+        switch (currentCell.getCachedFormulaResultTypeEnum()) {
+        case STRING:
+            System.out.println(currentCell.getRichStringCellValue().getString());
+            return currentCell.getRichStringCellValue().getString();
+        case NUMERIC:
+            if (DateUtil.isCellDateFormatted(currentCell)) {
+                System.out.println(currentCell.getDateCellValue());
+                return currentCell.getDateCellValue().toString();
+            } else {
+                System.out.println(currentCell.getNumericCellValue());
+                String returnValue = String.valueOf(currentCell.getNumericCellValue());
+                return returnValue;
+            }
+        case BOOLEAN:
+            System.out.println(currentCell.getBooleanCellValue());
+            return String.valueOf(currentCell.getBooleanCellValue());
+        case ERROR:
+            System.out.println(currentCell.getErrorCellValue());
+            return String.valueOf(currentCell.getErrorCellValue());
+        default:
+            System.out.println("default formula cell"); // should never occur
+            return "default formula cell";
+        }
+    }
+
     /**
      * @param stringCellValue
      * @param cellIterator
@@ -116,14 +164,53 @@ public class ExcelModel {
             setLanguage(nextCell.getStringCellValue());
         } else if (stringCellValue.equals(MAIN_APPLICATIONS)) {
             while (iterator.hasNext()) {
+                Boolean breakWhile = false;
                 Row currentRow = iterator.next();
                 cellIterator = currentRow.iterator();
                 while (cellIterator.hasNext()) {
                     Cell currentCell = cellIterator.next();
                     String cellValue = convertCellValueToString(currentCell);
+                    if (cellValue.equals(EMBEDDED_COMPONENTS)) {
+                        breakWhile = true;
+                        break;
+                    }
+                    if (isNotBlank(cellValue)) {
+                        mainApplications.add(cellValue);
+                    }
+                }
+                if (breakWhile) {
+                    break;
+                }
+            }
+        } else if (stringCellValue.equals(EMBEDDED_COMPONENTS)) {
+            while (iterator.hasNext()) {
+                Boolean breakWhile = false;
+                Row currentRow = iterator.next();
+                cellIterator = currentRow.iterator();
+                while (cellIterator.hasNext()) {
+                    Cell currentCell = cellIterator.next();
+                    String cellValue = convertCellValueToString(currentCell);
+                    if (cellValue.equals(PLUG_INS)) {
+                        breakWhile = true;
+                        break;
+                    }
+                    if (isNotBlank(cellValue)) {
+                        embeddedComponents.add(cellValue);
+                    }
+                }
+                if (breakWhile) {
+                    break;
                 }
             }
         }
+    }
+
+    /**
+     * @param cellValue
+     * @return
+     */
+    private boolean isNotBlank(String cellValue) {
+        return !cellValue.equals("BLANK");
     }
 
     public String getLanguage() {
