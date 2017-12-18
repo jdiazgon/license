@@ -3,12 +3,15 @@ package com.capgemini.license;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import fr.opensagres.xdocreport.core.XDocReportException;
 
 /**
  *
@@ -17,7 +20,7 @@ public class UserView implements ActionListener {
 
     JButton openExcelBtn = new JButton("Open Excel");
 
-    JButton generateDocBtn = new JButton("Open Doc ");
+    JButton generateDocBtn = new JButton("Open Doc");
 
     JPanel buttonPanel = new JPanel();
 
@@ -42,6 +45,7 @@ public class UserView implements ActionListener {
         buttonPanel.setLayout(null);
         buttonPanel.add(openExcelBtn);
         buttonPanel.add(generateDocBtn);
+        disableDocButton();
 
         // Setting frame settings
         frame.add(buttonPanel);
@@ -66,7 +70,23 @@ public class UserView implements ActionListener {
                 licenseController.updateExcelModel(selectedExcelFile);
             }
         } else if (buttonName.equals("Open Doc")) {
-            JFileChooser fc = new JFileChooser(userDir + "/Desktop");
+            JFileChooser fileChooser = new JFileChooser(userDir + "/Desktop");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("MS Word file(.docx)", "docx");
+            fileChooser.setFileFilter(filter);
+            int returnVal = fileChooser.showOpenDialog(buttonPanel);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                System.out.println("You chose to open this file: " + fileChooser.getSelectedFile().getName());
+                setSelectedDocFile(fileChooser.getSelectedFile());
+                try {
+                    licenseController.generateDocFile(selectedDocFile);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (XDocReportException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -94,4 +114,11 @@ public class UserView implements ActionListener {
         this.licenseController = licenseController;
     }
 
+    public void enableDocButton() {
+        generateDocBtn.setEnabled(true);
+    }
+
+    public void disableDocButton() {
+        generateDocBtn.setEnabled(false);
+    }
 }

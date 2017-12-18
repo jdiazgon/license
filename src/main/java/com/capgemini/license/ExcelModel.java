@@ -5,14 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -23,21 +22,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelModel {
 
-    /**
-     *
-     */
     private static final String PLUG_INS = "Plug-ins";
 
-    /**
-     *
-     */
     private static final String MAIN_APPLICATIONS = "Main Applications";
 
     private static final String EMBEDDED_COMPONENTS = "Embedded Components";
 
-    /**
-     *
-     */
     private static final String LANGUAGE = "Sprache:";
 
     File selectedExcelFile;
@@ -49,10 +39,6 @@ public class ExcelModel {
     private List<String> embeddedComponents;
 
     private List<String> plugIns;
-
-    private FormulaEvaluator evaluator;
-
-    private DataFormatter formatter;
 
     public ExcelModel() {
         mainApplications = new ArrayList<String>();
@@ -71,16 +57,13 @@ public class ExcelModel {
     /**
      * Reads every content of an excel file
      */
-    public void readExcelData() {
+    public Boolean readExcelData() {
         try {
 
             FileInputStream excelFile = new FileInputStream(selectedExcelFile);
             Workbook workbook = new XSSFWorkbook(excelFile);
             Sheet datatypeSheet = workbook.getSheetAt(0);
             Iterator<Row> iterator = datatypeSheet.iterator();
-
-            evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-            formatter = new DataFormatter(true);
 
             while (iterator.hasNext()) {
 
@@ -98,9 +81,15 @@ public class ExcelModel {
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        printList(mainApplications);
+        printList(embeddedComponents);
+        printList(plugIns);
+        return true;
     }
 
     /**
@@ -117,7 +106,7 @@ public class ExcelModel {
             String returnValue = String.valueOf(currentCell.getNumericCellValue());
             return returnValue;
         } else if (currentCell.getCellTypeEnum() == CellType.FORMULA) {
-            convertFormulaValueToString(currentCell);
+            return convertFormulaValueToString(currentCell);
         }
         return "BLANK";
     }
@@ -162,47 +151,103 @@ public class ExcelModel {
         if (stringCellValue.equals(LANGUAGE)) {
             Cell nextCell = cellIterator.next();
             setLanguage(nextCell.getStringCellValue());
+            return;
         } else if (stringCellValue.equals(MAIN_APPLICATIONS)) {
-            while (iterator.hasNext()) {
-                Boolean breakWhile = false;
-                Row currentRow = iterator.next();
-                cellIterator = currentRow.iterator();
-                while (cellIterator.hasNext()) {
-                    Cell currentCell = cellIterator.next();
-                    String cellValue = convertCellValueToString(currentCell);
-                    if (cellValue.equals(EMBEDDED_COMPONENTS)) {
-                        breakWhile = true;
-                        break;
-                    }
-                    if (isNotBlank(cellValue)) {
-                        mainApplications.add(cellValue);
-                    }
-                }
-                if (breakWhile) {
+            stringCellValue = updateMainApplications(iterator);
+        }
+        if (stringCellValue.equals(EMBEDDED_COMPONENTS)) {
+            stringCellValue = updateEmbeddedComponents(iterator);
+        }
+        if (stringCellValue.equals(PLUG_INS)) {
+            updatePlugIns(iterator);
+        }
+    }
+
+    /**
+     * @param rowIterator
+     */
+    private void updatePlugIns(Iterator<Row> rowIterator) {
+        String stringCellValue;
+        Iterator<Cell> cellIterator;
+        while (rowIterator.hasNext()) {
+            Boolean breakWhile = false;
+            Row currentRow = rowIterator.next();
+            cellIterator = currentRow.iterator();
+            while (cellIterator.hasNext()) {
+                Cell currentCell = cellIterator.next();
+                stringCellValue = convertCellValueToString(currentCell);
+                if (stringCellValue.equals(PLUG_INS)) {
+                    breakWhile = true;
                     break;
+                }
+                if (isNotBlank(stringCellValue)) {
+                    plugIns.add(stringCellValue);
                 }
             }
-        } else if (stringCellValue.equals(EMBEDDED_COMPONENTS)) {
-            while (iterator.hasNext()) {
-                Boolean breakWhile = false;
-                Row currentRow = iterator.next();
-                cellIterator = currentRow.iterator();
-                while (cellIterator.hasNext()) {
-                    Cell currentCell = cellIterator.next();
-                    String cellValue = convertCellValueToString(currentCell);
-                    if (cellValue.equals(PLUG_INS)) {
-                        breakWhile = true;
-                        break;
-                    }
-                    if (isNotBlank(cellValue)) {
-                        embeddedComponents.add(cellValue);
-                    }
-                }
-                if (breakWhile) {
-                    break;
-                }
+            if (breakWhile) {
+                break;
             }
         }
+    }
+
+    /**
+     * @param stringCellValue
+     * @param rowIterator
+     * @return
+     */
+    private String updateEmbeddedComponents(Iterator<Row> rowIterator) {
+        String stringCellValue = "BLANK";
+        Iterator<Cell> cellIterator;
+        while (rowIterator.hasNext()) {
+            Boolean breakWhile = false;
+            Row currentRow = rowIterator.next();
+            cellIterator = currentRow.iterator();
+            while (cellIterator.hasNext()) {
+                Cell currentCell = cellIterator.next();
+                stringCellValue = convertCellValueToString(currentCell);
+                if (stringCellValue.equals(PLUG_INS)) {
+                    breakWhile = true;
+                    break;
+                }
+                if (isNotBlank(stringCellValue)) {
+                    embeddedComponents.add(stringCellValue);
+                }
+            }
+            if (breakWhile) {
+                break;
+            }
+        }
+        return stringCellValue;
+    }
+
+    /**
+     * @param stringCellValue
+     * @param rowIterator
+     * @return
+     */
+    private String updateMainApplications(Iterator<Row> rowIterator) {
+        String stringCellValue = "BLANK";
+        Iterator<Cell> cellIterator;
+        while (rowIterator.hasNext()) {
+            Boolean breakWhile = false;
+            Row currentRow = rowIterator.next();
+            cellIterator = currentRow.iterator();
+            while (cellIterator.hasNext()) {
+                Cell currentCell = cellIterator.next();
+                stringCellValue = convertCellValueToString(currentCell);
+                if (stringCellValue.equals(EMBEDDED_COMPONENTS)) {
+                    breakWhile = true;
+                    break;
+                }
+                if (isNotBlank(stringCellValue)) {
+                    mainApplications.add(stringCellValue);
+                }
+            }
+            if (breakWhile) {
+                break;
+            }
+        }
+        return stringCellValue;
     }
 
     /**
@@ -219,6 +264,11 @@ public class ExcelModel {
 
     public void setLanguage(String language) {
         this.language = language;
+    }
+
+    public void printList(List<String> list) {
+        System.out.println("List: ");
+        System.out.println(Arrays.toString(list.toArray()));
     }
 
 }
