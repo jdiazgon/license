@@ -64,6 +64,7 @@ public class LicenseController {
         // Create Java model context
         IContext context = report.createContext();
         context.put("name", "world");
+        context.put("mainApplications", excelModel.getMainApplications());
 
         String pathFile = selectedDocFile.getParent();
 

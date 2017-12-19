@@ -271,4 +271,12 @@ public class ExcelModel {
         System.out.println(Arrays.toString(list.toArray()));
     }
 
+    public List<String> getMainApplications() {
+        return mainApplications;
+    }
+
+    public void setMainApplications(List<String> mainApplications) {
+        this.mainApplications = mainApplications;
+    }
+
 }
