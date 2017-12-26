@@ -40,6 +40,8 @@ public class ExcelModel {
 
     private List<PlugIn> plugIns;
 
+    private Workbook workbook = null;
+
     public ExcelModel() {
         mainApplications = new ArrayList<MainApplication>();
         embeddedComponents = new ArrayList<EmbeddedComponent>();
@@ -61,7 +63,7 @@ public class ExcelModel {
         try {
 
             FileInputStream excelFile = new FileInputStream(selectedExcelFile);
-            Workbook workbook = new XSSFWorkbook(excelFile);
+            workbook = new XSSFWorkbook(excelFile);
             Sheet datatypeSheet = workbook.getSheetAt(0);
             Iterator<Row> iterator = datatypeSheet.iterator();
 
@@ -344,6 +346,108 @@ public class ExcelModel {
 
     public void setPlugIns(List<PlugIn> plugIns) {
         this.plugIns = plugIns;
+    }
+
+    /**
+     * Tries to find a sheet with his name for getting all the component's data
+     * @param name
+     *            name of the plugin
+     * @param version
+     *            version of the plugin
+     */
+    public List<Component> getComponents(String name, String version) {
+        Sheet datatypeSheet = workbook.getSheet(name);
+        Iterator<Row> iterator = datatypeSheet.iterator();
+        List<Component> components = new ArrayList<Component>();
+
+        while (iterator.hasNext()) {
+
+            Row currentRow = iterator.next();
+            Iterator<Cell> cellIterator = currentRow.iterator();
+
+            while (cellIterator.hasNext()) {
+
+                Cell currentCell = cellIterator.next();
+                String cellValue = convertCellValueToString(currentCell);
+                components = updateComponentModel(cellValue, cellIterator, iterator, version);
+                if (components.size() >= 1) {
+                    return components;
+                }
+            }
+            System.out.println();
+
+        }
+
+        return components;
+    }
+
+    /**
+     * @param cellValue
+     * @param cellIterator
+     * @param iterator
+     * @param version
+     */
+    private List<Component> updateComponentModel(String cellValue, Iterator<Cell> cellIterator, Iterator<Row> iterator,
+        String version) {
+        List<Component> components = new ArrayList<Component>();
+        if (cellValue.equals(version)) {
+            // Component found, lets get the table data
+            components = getComponentData(iterator);
+        }
+        return components;
+    }
+
+    /**
+     * @param iterator
+     */
+    private List<Component> getComponentData(Iterator<Row> rowIterator) {
+
+        String stringCellValue = "BLANK";
+        Iterator<Cell> cellIterator;
+        List<Component> components = new ArrayList<Component>();
+
+        while (rowIterator.hasNext()) {
+            Boolean breakWhile = false;
+            Row currentRow = rowIterator.next();
+            cellIterator = currentRow.iterator();
+
+            int cellCounter = 0;
+            String componentName = "";
+            String componentVersion = "";
+            String componentLicense = "";
+
+            while (cellIterator.hasNext()) {
+                Cell currentCell = cellIterator.next();
+                stringCellValue = convertCellValueToString(currentCell);
+                // TODO: Change this logic for a working one
+                if (stringCellValue.contains("v4.")) {
+                    breakWhile = true;
+                    break;
+                }
+                if (isNotBlank(stringCellValue)) {
+                    // Setting name of the component
+                    if (cellCounter == 0) {
+                        componentName = stringCellValue;
+                    }
+                    // Setting version of the embedded component
+                    if (cellCounter == 1) {
+                        componentVersion = stringCellValue;
+                    }
+                    // Setting description of the embedded component and creating a new EmbeddedComponent
+                    // object
+                    if (cellCounter == 2) {
+                        componentLicense = stringCellValue;
+                        Component component = new Component(componentName, componentVersion, componentLicense);
+                        components.add(component);
+                    }
+                    cellCounter++;
+                }
+            }
+            if (breakWhile) {
+                break;
+            }
+        }
+        return components;
     }
 
 }

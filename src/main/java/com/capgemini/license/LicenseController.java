@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import fr.opensagres.xdocreport.core.XDocReportException;
 import fr.opensagres.xdocreport.document.IXDocReport;
@@ -21,6 +23,11 @@ public class LicenseController {
 
     private UserView userView;
 
+    // Java model context for generating files
+    private IContext context;
+
+    private List<Component> components = new ArrayList<Component>();
+
     /**
      * MVC: Controller module
      * @param excelModel
@@ -29,7 +36,6 @@ public class LicenseController {
      *            User interface for opening files
      */
     public LicenseController(ExcelModel excelModel, UserView userView) {
-        super();
         this.excelModel = excelModel;
         this.userView = userView;
     }
@@ -61,12 +67,8 @@ public class LicenseController {
         InputStream in = new FileInputStream(selectedDocFile);
         IXDocReport report = XDocReportRegistry.getRegistry().loadReport(in, TemplateEngineKind.Freemarker);
 
-        // Create Java model context
-        IContext context = report.createContext();
-        context.put("name", "world");
-        context.put("mainApplications", excelModel.getMainApplications());
-        context.put("embeddedComponents", excelModel.getEmbeddedComponents());
-        context.put("plugIns", excelModel.getPlugIns());
+        context = report.createContext();
+        setContextData();
 
         String pathFile = selectedDocFile.getParent();
 
@@ -81,5 +83,21 @@ public class LicenseController {
             // no write access
             System.out.println("No write acces");
         }
+    }
+
+    /**
+     * 
+     */
+    private void setContextData() {
+        context.put("name", "world");
+        context.put("mainApplications", excelModel.getMainApplications());
+        context.put("embeddedComponents", excelModel.getEmbeddedComponents());
+        context.put("plugIns", excelModel.getPlugIns());
+
+        List<MainApplication> mainApplications = excelModel.getMainApplications();
+        for (MainApplication mainApplication : mainApplications) {
+            components = excelModel.getComponents(mainApplication.getName(), mainApplication.getVersion());
+        }
+        context.put("mainApplicationsComponents", components);
     }
 }
