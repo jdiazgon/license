@@ -34,16 +34,16 @@ public class ExcelModel {
 
     private String language;
 
-    private List<String> mainApplications;
+    private List<MainApplication> mainApplications;
 
-    private List<String> embeddedComponents;
+    private List<EmbeddedComponent> embeddedComponents;
 
-    private List<String> plugIns;
+    private List<PlugIn> plugIns;
 
     public ExcelModel() {
-        mainApplications = new ArrayList<String>();
-        embeddedComponents = new ArrayList<String>();
-        plugIns = new ArrayList<String>();
+        mainApplications = new ArrayList<MainApplication>();
+        embeddedComponents = new ArrayList<EmbeddedComponent>();
+        plugIns = new ArrayList<PlugIn>();
     }
 
     public File getSelectedExcelFile() {
@@ -86,9 +86,9 @@ public class ExcelModel {
             e.printStackTrace();
             return false;
         }
-        printList(mainApplications);
-        printList(embeddedComponents);
-        printList(plugIns);
+        // printList(mainApplications);
+        // printList(embeddedComponents);
+        // printList(plugIns);
         return true;
     }
 
@@ -134,7 +134,8 @@ public class ExcelModel {
             return String.valueOf(currentCell.getBooleanCellValue());
         case ERROR:
             System.out.println(currentCell.getErrorCellValue());
-            return String.valueOf(currentCell.getErrorCellValue());
+            String errorMessage = "#REF error, code: " + currentCell.getErrorCellValue();
+            return errorMessage;
         default:
             System.out.println("default formula cell"); // should never occur
             return "default formula cell";
@@ -170,22 +171,29 @@ public class ExcelModel {
         String stringCellValue;
         Iterator<Cell> cellIterator;
         while (rowIterator.hasNext()) {
-            Boolean breakWhile = false;
             Row currentRow = rowIterator.next();
             cellIterator = currentRow.iterator();
+
+            int cellCounter = 0;
+            String plugInName = "";
+            String plugInVersion = "";
+
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
                 stringCellValue = convertCellValueToString(currentCell);
-                if (stringCellValue.equals(PLUG_INS)) {
-                    breakWhile = true;
-                    break;
-                }
                 if (isNotBlank(stringCellValue)) {
-                    plugIns.add(stringCellValue);
+                    // Setting name of the plugIn
+                    if (cellCounter == 0) {
+                        plugInName = stringCellValue;
+                    }
+                    // Setting version of the plugIn and creating a new PlugIn object
+                    if (cellCounter == 1) {
+                        plugInVersion = stringCellValue;
+                        PlugIn plugIn = new PlugIn(plugInName, plugInVersion);
+                        plugIns.add(plugIn);
+                    }
+                    cellCounter++;
                 }
-            }
-            if (breakWhile) {
-                break;
             }
         }
     }
@@ -202,6 +210,12 @@ public class ExcelModel {
             Boolean breakWhile = false;
             Row currentRow = rowIterator.next();
             cellIterator = currentRow.iterator();
+
+            int cellCounter = 0;
+            String embeddedComponentName = "";
+            String embeddedComponentVersion = "";
+            String embeddedComponentDescription = "";
+
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
                 stringCellValue = convertCellValueToString(currentCell);
@@ -210,7 +224,23 @@ public class ExcelModel {
                     break;
                 }
                 if (isNotBlank(stringCellValue)) {
-                    embeddedComponents.add(stringCellValue);
+                    // Setting name of the embedded component
+                    if (cellCounter == 0) {
+                        embeddedComponentName = stringCellValue;
+                    }
+                    // Setting version of the embedded component
+                    if (cellCounter == 1) {
+                        embeddedComponentVersion = stringCellValue;
+                    }
+                    // Setting description of the embedded component and creating a new EmbeddedComponent
+                    // object
+                    if (cellCounter == 2) {
+                        embeddedComponentDescription = stringCellValue;
+                        EmbeddedComponent embeddedComponent = new EmbeddedComponent(embeddedComponentName,
+                            embeddedComponentVersion, embeddedComponentDescription);
+                        embeddedComponents.add(embeddedComponent);
+                    }
+                    cellCounter++;
                 }
             }
             if (breakWhile) {
@@ -232,6 +262,12 @@ public class ExcelModel {
             Boolean breakWhile = false;
             Row currentRow = rowIterator.next();
             cellIterator = currentRow.iterator();
+
+            int cellCounter = 0;
+            String mainApplicationName = "";
+            String mainApplicationVersion = "";
+            String mainApplicationDescription = "";
+
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
                 stringCellValue = convertCellValueToString(currentCell);
@@ -240,7 +276,22 @@ public class ExcelModel {
                     break;
                 }
                 if (isNotBlank(stringCellValue)) {
-                    mainApplications.add(stringCellValue);
+                    // Setting name of the main application
+                    if (cellCounter == 0) {
+                        mainApplicationName = stringCellValue;
+                    }
+                    // Setting version of the main application
+                    if (cellCounter == 1) {
+                        mainApplicationVersion = stringCellValue;
+                    }
+                    // Setting description of the main application and creating a new MainApplication object
+                    if (cellCounter == 2) {
+                        mainApplicationDescription = stringCellValue;
+                        MainApplication mainApplication = new MainApplication(mainApplicationName,
+                            mainApplicationVersion, mainApplicationDescription);
+                        mainApplications.add(mainApplication);
+                    }
+                    cellCounter++;
                 }
             }
             if (breakWhile) {
@@ -271,12 +322,28 @@ public class ExcelModel {
         System.out.println(Arrays.toString(list.toArray()));
     }
 
-    public List<String> getMainApplications() {
+    public List<MainApplication> getMainApplications() {
         return mainApplications;
     }
 
-    public void setMainApplications(List<String> mainApplications) {
+    public void setMainApplications(List<MainApplication> mainApplications) {
         this.mainApplications = mainApplications;
+    }
+
+    public List<EmbeddedComponent> getEmbeddedComponents() {
+        return embeddedComponents;
+    }
+
+    public void setEmbeddedComponents(List<EmbeddedComponent> embeddedComponents) {
+        this.embeddedComponents = embeddedComponents;
+    }
+
+    public List<PlugIn> getPlugIns() {
+        return plugIns;
+    }
+
+    public void setPlugIns(List<PlugIn> plugIns) {
+        this.plugIns = plugIns;
     }
 
 }

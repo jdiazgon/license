@@ -65,6 +65,8 @@ public class LicenseController {
         IContext context = report.createContext();
         context.put("name", "world");
         context.put("mainApplications", excelModel.getMainApplications());
+        context.put("embeddedComponents", excelModel.getEmbeddedComponents());
+        context.put("plugIns", excelModel.getPlugIns());
 
         String pathFile = selectedDocFile.getParent();
 
