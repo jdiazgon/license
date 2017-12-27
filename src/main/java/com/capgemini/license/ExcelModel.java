@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -78,7 +77,6 @@ public class ExcelModel {
                     String cellValue = convertCellValueToString(currentCell);
                     updateModel(cellValue, cellIterator, iterator);
                 }
-                System.out.println();
 
             }
         } catch (FileNotFoundException e) {
@@ -101,10 +99,8 @@ public class ExcelModel {
     private String convertCellValueToString(Cell currentCell) {
 
         if (currentCell.getCellTypeEnum() == CellType.STRING) {
-            System.out.print(currentCell.getStringCellValue() + "--");
             return currentCell.getStringCellValue();
         } else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
-            System.out.print(currentCell.getNumericCellValue() + "--");
             String returnValue = String.valueOf(currentCell.getNumericCellValue());
             return returnValue;
         } else if (currentCell.getCellTypeEnum() == CellType.FORMULA) {
@@ -120,26 +116,20 @@ public class ExcelModel {
     private String convertFormulaValueToString(Cell currentCell) {
         switch (currentCell.getCachedFormulaResultTypeEnum()) {
         case STRING:
-            System.out.println(currentCell.getRichStringCellValue().getString());
             return currentCell.getRichStringCellValue().getString();
         case NUMERIC:
             if (DateUtil.isCellDateFormatted(currentCell)) {
-                System.out.println(currentCell.getDateCellValue());
                 return currentCell.getDateCellValue().toString();
             } else {
-                System.out.println(currentCell.getNumericCellValue());
                 String returnValue = String.valueOf(currentCell.getNumericCellValue());
                 return returnValue;
             }
         case BOOLEAN:
-            System.out.println(currentCell.getBooleanCellValue());
             return String.valueOf(currentCell.getBooleanCellValue());
         case ERROR:
-            System.out.println(currentCell.getErrorCellValue());
             String errorMessage = "#REF error, code: " + currentCell.getErrorCellValue();
             return errorMessage;
         default:
-            System.out.println("default formula cell"); // should never occur
             return "default formula cell";
         }
     }
@@ -310,51 +300,6 @@ public class ExcelModel {
     }
 
     /**
-     * @param cellValue
-     * @return
-     */
-    private boolean isNotBlank(String cellValue) {
-        return !cellValue.equals("BLANK");
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public void printList(List<String> list) {
-        System.out.println("List: ");
-        System.out.println(Arrays.toString(list.toArray()));
-    }
-
-    public List<MainApplication> getMainApplications() {
-        return mainApplications;
-    }
-
-    public void setMainApplications(List<MainApplication> mainApplications) {
-        this.mainApplications = mainApplications;
-    }
-
-    public List<EmbeddedComponent> getEmbeddedComponents() {
-        return embeddedComponents;
-    }
-
-    public void setEmbeddedComponents(List<EmbeddedComponent> embeddedComponents) {
-        this.embeddedComponents = embeddedComponents;
-    }
-
-    public List<PlugIn> getPlugIns() {
-        return plugIns;
-    }
-
-    public void setPlugIns(List<PlugIn> plugIns) {
-        this.plugIns = plugIns;
-    }
-
-    /**
      * Tries to find a sheet with his name for getting all the component's data
      * @param name
      *            name of the plugin
@@ -381,7 +326,6 @@ public class ExcelModel {
                         return components;
                     }
                 }
-                System.out.println();
 
             }
             if (components.size() >= 1) {
@@ -459,6 +403,46 @@ public class ExcelModel {
             }
         }
         return components;
+    }
+
+    /**
+     * @param cellValue
+     * @return
+     */
+    private boolean isNotBlank(String cellValue) {
+        return !cellValue.equals("BLANK");
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public List<MainApplication> getMainApplications() {
+        return mainApplications;
+    }
+
+    public void setMainApplications(List<MainApplication> mainApplications) {
+        this.mainApplications = mainApplications;
+    }
+
+    public List<EmbeddedComponent> getEmbeddedComponents() {
+        return embeddedComponents;
+    }
+
+    public void setEmbeddedComponents(List<EmbeddedComponent> embeddedComponents) {
+        this.embeddedComponents = embeddedComponents;
+    }
+
+    public List<PlugIn> getPlugIns() {
+        return plugIns;
+    }
+
+    public void setPlugIns(List<PlugIn> plugIns) {
+        this.plugIns = plugIns;
     }
 
 }

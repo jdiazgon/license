@@ -1,14 +1,19 @@
 package com.capgemini.license;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import fr.opensagres.xdocreport.core.XDocReportException;
@@ -23,6 +28,8 @@ public class UserView implements ActionListener {
     JButton generateDocBtn = new JButton("Open Doc");
 
     JPanel buttonPanel = new JPanel();
+
+    JPanel masterPanel = new JPanel();
 
     File selectedExcelFile;
 
@@ -45,15 +52,28 @@ public class UserView implements ActionListener {
         buttonPanel.setLayout(null);
         buttonPanel.add(openExcelBtn);
         buttonPanel.add(generateDocBtn);
+
+        masterPanel.setLayout(new BorderLayout());
+        masterPanel.add(buttonPanel, BorderLayout.CENTER);
         disableDocButton();
 
+        // Setting Text area for console
+        JTextArea textArea = new JTextArea(10, 30);
+        textArea.setEditable(false);
+        masterPanel.add(new JScrollPane(textArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.SOUTH);
+
         // Setting frame settings
-        frame.add(buttonPanel);
-        frame.setSize(400, 300);
+        frame.add(masterPanel);
+        frame.setSize(400, 400);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        JTextAreaOutputStream out = new JTextAreaOutputStream(textArea);
+        System.setOut(new PrintStream(out));
     }
 
+    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String userDir = System.getProperty("user.home");
         String buttonName = actionEvent.getActionCommand();
@@ -63,7 +83,7 @@ public class UserView implements ActionListener {
             FileNameExtensionFilter filter = new FileNameExtensionFilter("XLS files", "xls", "xlsx");
             fileChooser.setFileFilter(filter);
 
-            int returnVal = fileChooser.showOpenDialog(buttonPanel);
+            int returnVal = fileChooser.showOpenDialog(masterPanel);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 System.out.println("You chose to open this file: " + fileChooser.getSelectedFile().getName());
                 setSelectedExcelFile(fileChooser.getSelectedFile());
@@ -73,7 +93,7 @@ public class UserView implements ActionListener {
             JFileChooser fileChooser = new JFileChooser(userDir + "/Desktop");
             FileNameExtensionFilter filter = new FileNameExtensionFilter("MS Word file(.docx)", "docx");
             fileChooser.setFileFilter(filter);
-            int returnVal = fileChooser.showOpenDialog(buttonPanel);
+            int returnVal = fileChooser.showOpenDialog(masterPanel);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 System.out.println("You chose to open this file: " + fileChooser.getSelectedFile().getName());
                 setSelectedDocFile(fileChooser.getSelectedFile());

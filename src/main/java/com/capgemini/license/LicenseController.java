@@ -43,7 +43,15 @@ public class LicenseController {
 
     public void updateExcelModel(File selectedExcelFile) {
         excelModel.setSelectedExcelFile(selectedExcelFile);
+
         if (excelModel.readExcelData()) {
+            System.out.println();
+            System.out.println("Main Applications contains: " + excelModel.getMainApplications().size() + " elements.");
+            System.out
+                .println("Embedded components contains: " + excelModel.getEmbeddedComponents().size() + " elements.");
+            System.out.println("Plugins contains: " + excelModel.getPlugIns().size() + " elements.");
+            System.out.println();
+
             enableDocButton();
         }
     }
@@ -83,6 +91,7 @@ public class LicenseController {
             // Closing OutputStream
             out.flush();
             out.close();
+            System.out.println("File succesfully generated");
         } else {
             // no write access
             System.out.println("No write acces");
