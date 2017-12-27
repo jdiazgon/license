@@ -172,6 +172,8 @@ public class ExcelModel {
     private void updatePlugIns(Iterator<Row> rowIterator) {
         String stringCellValue;
         Iterator<Cell> cellIterator;
+        plugIns = new ArrayList<PlugIn>();
+
         while (rowIterator.hasNext()) {
             Row currentRow = rowIterator.next();
             cellIterator = currentRow.iterator();
@@ -208,6 +210,8 @@ public class ExcelModel {
     private String updateEmbeddedComponents(Iterator<Row> rowIterator) {
         String stringCellValue = "BLANK";
         Iterator<Cell> cellIterator;
+        embeddedComponents = new ArrayList<EmbeddedComponent>();
+
         while (rowIterator.hasNext()) {
             Boolean breakWhile = false;
             Row currentRow = rowIterator.next();
@@ -260,6 +264,8 @@ public class ExcelModel {
     private String updateMainApplications(Iterator<Row> rowIterator) {
         String stringCellValue = "BLANK";
         Iterator<Cell> cellIterator;
+        mainApplications = new ArrayList<MainApplication>();
+
         while (rowIterator.hasNext()) {
             Boolean breakWhile = false;
             Row currentRow = rowIterator.next();
@@ -357,28 +363,33 @@ public class ExcelModel {
      */
     public List<Component> getComponents(String name, String version) {
         Sheet datatypeSheet = workbook.getSheet(name);
-        Iterator<Row> iterator = datatypeSheet.iterator();
-        List<Component> components = new ArrayList<Component>();
+        if (datatypeSheet != null) {
+            Iterator<Row> iterator = datatypeSheet.iterator();
+            List<Component> components = new ArrayList<Component>();
 
-        while (iterator.hasNext()) {
+            while (iterator.hasNext()) {
 
-            Row currentRow = iterator.next();
-            Iterator<Cell> cellIterator = currentRow.iterator();
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
 
-            while (cellIterator.hasNext()) {
+                while (cellIterator.hasNext()) {
 
-                Cell currentCell = cellIterator.next();
-                String cellValue = convertCellValueToString(currentCell);
-                components = updateComponentModel(cellValue, cellIterator, iterator, version);
-                if (components.size() >= 1) {
-                    return components;
+                    Cell currentCell = cellIterator.next();
+                    String cellValue = convertCellValueToString(currentCell);
+                    components = updateComponentModel(cellValue, cellIterator, iterator, version);
+                    if (components.size() >= 1) {
+                        return components;
+                    }
                 }
-            }
-            System.out.println();
+                System.out.println();
 
+            }
+            if (components.size() >= 1) {
+                return components;
+            }
         }
 
-        return components;
+        return null;
     }
 
     /**
@@ -419,8 +430,8 @@ public class ExcelModel {
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
                 stringCellValue = convertCellValueToString(currentCell);
-                // TODO: Change this logic for a working one
-                if (stringCellValue.contains("v4.")) {
+                // TODO: Is there a better logic?
+                if (stringCellValue.subSequence(0, 3).toString().matches("^[v][0-9].")) {
                     breakWhile = true;
                     break;
                 }

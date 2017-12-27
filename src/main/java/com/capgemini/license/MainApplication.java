@@ -1,8 +1,5 @@
 package com.capgemini.license;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Class that contains the information from each Main Application
  */
@@ -14,8 +11,6 @@ public class MainApplication {
 
     private final String description;
 
-    private List<Component> components;
-
     /**
      * @param name
      * @param version
@@ -25,7 +20,6 @@ public class MainApplication {
         this.name = name;
         this.version = version;
         this.description = description;
-        components = new ArrayList<Component>();
     }
 
     public String getName() {

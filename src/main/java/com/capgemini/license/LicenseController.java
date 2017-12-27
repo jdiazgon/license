@@ -26,7 +26,8 @@ public class LicenseController {
     // Java model context for generating files
     private IContext context;
 
-    private List<Component> components = new ArrayList<Component>();
+    // List for every component of every plugin
+    private List<List<Component>> pluginsComponents;
 
     /**
      * MVC: Controller module
@@ -79,6 +80,9 @@ public class LicenseController {
         if (outputFile.canWrite()) {
             // write access
             report.process(context, out);
+            // Closing OutputStream
+            out.flush();
+            out.close();
         } else {
             // no write access
             System.out.println("No write acces");
@@ -86,7 +90,7 @@ public class LicenseController {
     }
 
     /**
-     * 
+     *
      */
     private void setContextData() {
         context.put("name", "world");
@@ -95,9 +99,34 @@ public class LicenseController {
         context.put("plugIns", excelModel.getPlugIns());
 
         List<MainApplication> mainApplications = excelModel.getMainApplications();
+        pluginsComponents = new ArrayList<List<Component>>();
+
         for (MainApplication mainApplication : mainApplications) {
+            List<Component> components = new ArrayList<Component>();
             components = excelModel.getComponents(mainApplication.getName(), mainApplication.getVersion());
+            pluginsComponents.add(components);
         }
-        context.put("mainApplicationsComponents", components);
+        context.put("mainApplicationsComponentsList", pluginsComponents);
+
+        List<EmbeddedComponent> embeddedComponents = excelModel.getEmbeddedComponents();
+        pluginsComponents = new ArrayList<List<Component>>();
+        for (EmbeddedComponent embeddedComponent : embeddedComponents) {
+            List<Component> components = new ArrayList<Component>();
+            components = excelModel.getComponents(embeddedComponent.getName(), embeddedComponent.getVersion());
+            pluginsComponents.add(components);
+        }
+        context.put("embeddedComponentsComponentsList", pluginsComponents);
+
+        List<PlugIn> plugIns = excelModel.getPlugIns();
+        pluginsComponents = new ArrayList<List<Component>>();
+        for (PlugIn plugIn : plugIns) {
+            List<Component> components = new ArrayList<Component>();
+            components = excelModel.getComponents(plugIn.getName(), plugIn.getVersion());
+            if (components != null) {
+                pluginsComponents.add(components);
+            }
+        }
+        context.put("plugInsComponentsList", pluginsComponents);
+
     }
 }
