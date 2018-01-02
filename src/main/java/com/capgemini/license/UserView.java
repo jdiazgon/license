@@ -71,6 +71,7 @@ public class UserView implements ActionListener {
 
         JTextAreaOutputStream out = new JTextAreaOutputStream(textArea);
         System.setOut(new PrintStream(out));
+        System.setErr(new PrintStream(out));
     }
 
     @Override
