@@ -1,6 +1,9 @@
 package com.capgemini.license;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -47,11 +50,20 @@ public class UserView implements ActionListener {
         generateDocBtn.addActionListener(this);
 
         // Adding buttons to panel
-        openExcelBtn.setBounds(120, 50, 140, 30);
-        generateDocBtn.setBounds(120, 150, 140, 30);
-        buttonPanel.setLayout(null);
-        buttonPanel.add(openExcelBtn);
-        buttonPanel.add(generateDocBtn);
+        openExcelBtn.setPreferredSize(new Dimension(120, 30));
+        generateDocBtn.setPreferredSize(new Dimension(120, 30));
+
+        buttonPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weighty = 0.5;
+        buttonPanel.add(openExcelBtn, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.weighty = 0.5;
+        buttonPanel.add(generateDocBtn, gbc);
 
         masterPanel.setLayout(new BorderLayout());
         masterPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -65,7 +77,7 @@ public class UserView implements ActionListener {
 
         // Setting frame settings
         frame.add(masterPanel);
-        frame.setSize(400, 400);
+        frame.setSize(600, 400);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
