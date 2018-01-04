@@ -17,7 +17,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
- *
+ * Class that retrieves all the data from the excel
  */
 public class ExcelModel {
 
@@ -135,9 +135,14 @@ public class ExcelModel {
     }
 
     /**
+     * Updates the Excel model by adding the information retrieved to the correct component
+     *
      * @param stringCellValue
+     *            Last string retrieved from the Excel
      * @param cellIterator
+     *            The next cells of the row
      * @param iterator
+     *            The next rows of the file
      */
     private void updateModel(String stringCellValue, Iterator<Cell> cellIterator, Iterator<Row> iterator) {
 
@@ -157,7 +162,9 @@ public class ExcelModel {
     }
 
     /**
+     * Traverse through the Excel file for finding all the plug-ins.
      * @param rowIterator
+     *            The next rows of the file
      */
     private void updatePlugIns(Iterator<Row> rowIterator) {
         String stringCellValue;
@@ -193,9 +200,12 @@ public class ExcelModel {
     }
 
     /**
+     * Traverse through the Excel file for finding all the embedded components until a plug-in is found.
      * @param stringCellValue
+     *            Last string retrieved from the Excel
      * @param rowIterator
-     * @return
+     *            The next rows of the file
+     * @return Last string retrieved from the Excel
      */
     private String updateEmbeddedComponents(Iterator<Row> rowIterator) {
         String stringCellValue = "BLANK";
@@ -247,9 +257,13 @@ public class ExcelModel {
     }
 
     /**
+     * Traverse through the Excel file for finding all the main applications until an embedded components is
+     * found.
      * @param stringCellValue
+     *            Last string retrieved from the Excel
      * @param rowIterator
-     * @return
+     *            The next rows of the file
+     * @return Last string retrieved from the Excel
      */
     private String updateMainApplications(Iterator<Row> rowIterator) {
         String stringCellValue = "BLANK";
@@ -302,9 +316,9 @@ public class ExcelModel {
     /**
      * Tries to find a sheet with his name for getting all the component's data
      * @param name
-     *            name of the plugin
+     *            name of the plug-in
      * @param version
-     *            version of the plugin
+     *            version of the plug-in
      */
     public List<Component> getComponents(String name, String version) {
         Sheet datatypeSheet = workbook.getSheet(name);
@@ -337,10 +351,16 @@ public class ExcelModel {
     }
 
     /**
+     * Creates a new list of components and checks if the plug-in version contains components
      * @param cellValue
+     *            Last string retrieved from the Excel
      * @param cellIterator
+     *            The next cells of the row
      * @param iterator
+     *            The next rows of the file
      * @param version
+     *            Version of the plug-in
+     * @return A list of components
      */
     private List<Component> updateComponentModel(String cellValue, Iterator<Cell> cellIterator, Iterator<Row> iterator,
         String version) {
@@ -353,7 +373,10 @@ public class ExcelModel {
     }
 
     /**
+     * Traverse through the components and retrieve the correct information.
      * @param iterator
+     *            The next rows of the file
+     * @return A list of components
      */
     private List<Component> getComponentData(Iterator<Row> rowIterator) {
 
@@ -374,7 +397,7 @@ public class ExcelModel {
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
                 stringCellValue = convertCellValueToString(currentCell);
-                // TODO: Is there a better logic?
+                // TODO: Is there a better logic? This checks if the string is a version (E.g. v.4.0)
                 if (stringCellValue.subSequence(0, 3).toString().matches("^[v][0-9].")) {
                     breakWhile = true;
                     break;
@@ -406,7 +429,9 @@ public class ExcelModel {
     }
 
     /**
+     * Checks if string value is not "BLANK"
      * @param cellValue
+     *            Last string retrieved from the Excel
      * @return
      */
     private boolean isNotBlank(String cellValue) {

@@ -47,6 +47,7 @@ public class UserView implements ActionListener {
         JFrame frame = new JFrame("LicenseApp");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // Set a nice icon to the program
         URL iconURL = getClass().getResource("/appIcon.png");
         if (iconURL != null) {
             // iconURL is null when not found

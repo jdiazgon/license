@@ -1,7 +1,8 @@
 package com.capgemini.license;
 
 /**
- *
+ * Class containing the library data used in a main application or an embedded component. (name, version and
+ * license)
  */
 public class Component {
 

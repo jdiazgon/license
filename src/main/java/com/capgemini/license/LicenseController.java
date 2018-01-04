@@ -16,7 +16,7 @@ import fr.opensagres.xdocreport.template.IContext;
 import fr.opensagres.xdocreport.template.TemplateEngineKind;
 
 /**
- *
+ * In charge of starting the excel reading and updating the User Interface
  */
 public class LicenseController {
     private ExcelModel excelModel;
@@ -41,6 +41,11 @@ public class LicenseController {
         this.userView = userView;
     }
 
+    /**
+     * Starts the excel reading of the file and outputs the quantity of elements retrieved.
+     * @param selectedExcelFile
+     *            Excel file to be read
+     */
     public void updateExcelModel(File selectedExcelFile) {
         excelModel.setSelectedExcelFile(selectedExcelFile);
 
@@ -99,7 +104,7 @@ public class LicenseController {
     }
 
     /**
-     *
+     * Sets all the data retrieved from the Excel to the IContext
      */
     private void setContextData() {
         context.put("name", "world");

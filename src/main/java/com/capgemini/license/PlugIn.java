@@ -1,7 +1,7 @@
 package com.capgemini.license;
 
 /**
- *
+ * Class that contains the information from each Plug-in
  */
 public class PlugIn {
 

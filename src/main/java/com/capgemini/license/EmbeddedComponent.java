@@ -1,7 +1,7 @@
 package com.capgemini.license;
 
 /**
- *
+ * Embedded component data retrieved from the Excel file
  */
 public class EmbeddedComponent {
 

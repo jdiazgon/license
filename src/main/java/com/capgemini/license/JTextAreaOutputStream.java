@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+/**
+ * Class for outputting the system output and errors into the UI console
+ */
 public class JTextAreaOutputStream extends OutputStream {
     private final JTextArea destination;
 
