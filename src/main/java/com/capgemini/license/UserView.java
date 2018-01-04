@@ -9,7 +9,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -44,6 +46,13 @@ public class UserView implements ActionListener {
         // Creating new frame
         JFrame frame = new JFrame("LicenseApp");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        URL iconURL = getClass().getResource("/appIcon.png");
+        if (iconURL != null) {
+            // iconURL is null when not found
+            ImageIcon icon = new ImageIcon(iconURL);
+            frame.setIconImage(icon.getImage());
+        }
 
         // Setting listeners to buttons
         openExcelBtn.addActionListener(this);
