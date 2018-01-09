@@ -9,14 +9,17 @@ public class PlugIn {
 
     private final String version;
 
+    private final String description;
+
     /**
      * @param name
      * @param version
      * @param description
      */
-    public PlugIn(String name, String version) {
+    public PlugIn(String name, String version, String description) {
         this.name = name;
         this.version = version;
+        this.description = description;
     }
 
     public String getName() {
@@ -25,6 +28,10 @@ public class PlugIn {
 
     public String getVersion() {
         return version;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
 }

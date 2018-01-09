@@ -39,6 +39,8 @@ public class ExcelModel {
 
     private List<PlugIn> plugIns;
 
+    private List<String> comments;
+
     private Workbook workbook = null;
 
     public ExcelModel() {
@@ -178,6 +180,7 @@ public class ExcelModel {
             int cellCounter = 0;
             String plugInName = "";
             String plugInVersion = "";
+            String plugInDescription = "";
 
             while (cellIterator.hasNext()) {
                 Cell currentCell = cellIterator.next();
@@ -187,10 +190,14 @@ public class ExcelModel {
                     if (cellCounter == 0) {
                         plugInName = stringCellValue;
                     }
-                    // Setting version of the plugIn and creating a new PlugIn object
+                    // Setting version of the plugIn
                     if (cellCounter == 1) {
                         plugInVersion = stringCellValue;
-                        PlugIn plugIn = new PlugIn(plugInName, plugInVersion);
+                    }
+                    // Setting description of the plugIn and creating a new PlugIn object
+                    if (cellCounter == 2) {
+                        plugInDescription = stringCellValue;
+                        PlugIn plugIn = new PlugIn(plugInName, plugInVersion, plugInDescription);
                         plugIns.add(plugIn);
                     }
                     cellCounter++;
@@ -383,6 +390,7 @@ public class ExcelModel {
         String stringCellValue = "BLANK";
         Iterator<Cell> cellIterator;
         List<Component> components = new ArrayList<Component>();
+        comments = new ArrayList<String>();
 
         while (rowIterator.hasNext()) {
             Boolean breakWhile = false;
@@ -405,7 +413,12 @@ public class ExcelModel {
                 if (isNotBlank(stringCellValue)) {
                     // Setting name of the component
                     if (cellCounter == 0) {
-                        componentName = stringCellValue;
+                        String checkComment = stringCellValue.substring(0, 3);
+                        if (isComment(checkComment)) {
+                            comments.add(stringCellValue.substring(3));
+                        } else {
+                            componentName = stringCellValue;
+                        }
                     }
                     // Setting version of the embedded component
                     if (cellCounter == 1) {
@@ -429,6 +442,15 @@ public class ExcelModel {
     }
 
     /**
+     * Checks if the text found is a comment and if it is the one for the selected language
+     * @param checkComment
+     * @return true: If it's a comment for our language
+     */
+    private boolean isComment(String checkComment) {
+        return checkComment.equals(getLanguage() + ":");
+    }
+
+    /**
      * Checks if string value is not "BLANK"
      * @param cellValue
      *            Last string retrieved from the Excel
@@ -448,6 +470,10 @@ public class ExcelModel {
 
     public List<MainApplication> getMainApplications() {
         return mainApplications;
+    }
+
+    public List<String> getComments() {
+        return comments;
     }
 
     public void setMainApplications(List<MainApplication> mainApplications) {

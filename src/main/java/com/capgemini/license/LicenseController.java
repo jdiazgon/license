@@ -112,35 +112,52 @@ public class LicenseController {
         context.put("embeddedComponents", excelModel.getEmbeddedComponents());
         context.put("plugIns", excelModel.getPlugIns());
 
+        // Contains all the comments for each component
+        List<List<String>> comments = new ArrayList<List<String>>();
+
         List<MainApplication> mainApplications = excelModel.getMainApplications();
         pluginsComponents = new ArrayList<List<Component>>();
 
         for (MainApplication mainApplication : mainApplications) {
             List<Component> components = new ArrayList<Component>();
+
             components = excelModel.getComponents(mainApplication.getName(), mainApplication.getVersion());
-            pluginsComponents.add(components);
+            if (components != null) {
+                pluginsComponents.add(components);
+            }
+            comments.add(excelModel.getComments());
         }
         context.put("mainApplicationsComponentsList", pluginsComponents);
+        context.put("mainApplicationsComments", comments);
+        comments = new ArrayList<List<String>>();
 
         List<EmbeddedComponent> embeddedComponents = excelModel.getEmbeddedComponents();
         pluginsComponents = new ArrayList<List<Component>>();
         for (EmbeddedComponent embeddedComponent : embeddedComponents) {
             List<Component> components = new ArrayList<Component>();
+
             components = excelModel.getComponents(embeddedComponent.getName(), embeddedComponent.getVersion());
-            pluginsComponents.add(components);
+            if (components != null) {
+                pluginsComponents.add(components);
+            }
+            comments.add(excelModel.getComments());
         }
         context.put("embeddedComponentsComponentsList", pluginsComponents);
+        context.put("embeddedComponentsComments", comments);
+        comments = new ArrayList<List<String>>();
 
         List<PlugIn> plugIns = excelModel.getPlugIns();
         pluginsComponents = new ArrayList<List<Component>>();
         for (PlugIn plugIn : plugIns) {
             List<Component> components = new ArrayList<Component>();
+
             components = excelModel.getComponents(plugIn.getName(), plugIn.getVersion());
             if (components != null) {
                 pluginsComponents.add(components);
             }
+            comments.add(excelModel.getComments());
         }
         context.put("plugInsComponentsList", pluginsComponents);
-
+        context.put("plugInsComments", comments);
     }
 }
