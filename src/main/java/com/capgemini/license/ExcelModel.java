@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -342,7 +343,7 @@ public class ExcelModel {
 
                     Cell currentCell = cellIterator.next();
                     String cellValue = convertCellValueToString(currentCell);
-                    components = updateComponentModel(cellValue, cellIterator, iterator, version);
+                    components = updateComponentModel(cellValue, cellIterator, iterator, version, name);
                     if (components.size() >= 1) {
                         return components;
                     }
@@ -367,71 +368,82 @@ public class ExcelModel {
      *            The next rows of the file
      * @param version
      *            Version of the plug-in
+     * @param lastRowNumber
      * @return A list of components
      */
     private List<Component> updateComponentModel(String cellValue, Iterator<Cell> cellIterator, Iterator<Row> iterator,
-        String version) {
+        String version, String sheetName) {
         List<Component> components = new ArrayList<Component>();
         if (cellValue.equals(version)) {
             // Component found, lets get the table data
-            components = getComponentData(iterator);
+            components = getComponentData(iterator, version, sheetName);
         }
         return components;
     }
 
     /**
      * Traverse through the components and retrieve the correct information.
+     * @param rowIterator
+     * @param version
+     *            Version of the plug-in
+     * @param sheetName
+     *            Used for getting the current sheet
      * @param iterator
      *            The next rows of the file
      * @return A list of components
      */
-    private List<Component> getComponentData(Iterator<Row> rowIterator) {
+    private List<Component> getComponentData(Iterator<Row> rowIterator, String version, String sheetName) {
 
         String stringCellValue = "BLANK";
         Iterator<Cell> cellIterator;
         List<Component> components = new ArrayList<Component>();
         comments = new ArrayList<String>();
+        // Let's move to the position where the components are stated
+        Sheet sheet = workbook.getSheet(sheetName);
+        int firstRowToGet = getRowNumberOfCurrentComponentVersion(version, sheet);
 
-        while (rowIterator.hasNext()) {
+        for (int i = firstRowToGet; i <= sheet.getLastRowNum(); i++) {
             Boolean breakWhile = false;
-            Row currentRow = rowIterator.next();
-            cellIterator = currentRow.iterator();
+            Row currentRow = sheet.getRow(i);
+            if (currentRow != null) {
+                cellIterator = currentRow.iterator();
 
-            int cellCounter = 0;
-            String componentName = "";
-            String componentVersion = "";
-            String componentLicense = "";
+                int cellCounter = 0;
+                String componentName = "";
+                String componentVersion = "";
+                String componentLicense = "";
 
-            while (cellIterator.hasNext()) {
-                Cell currentCell = cellIterator.next();
-                stringCellValue = convertCellValueToString(currentCell);
-                // TODO: Is there a better logic? This checks if the string is a version (E.g. v.4.0)
-                if (stringCellValue.subSequence(0, 3).toString().matches("^[v][0-9].")) {
-                    breakWhile = true;
-                    break;
-                }
-                if (isNotBlank(stringCellValue)) {
-                    // Setting name of the component
-                    if (cellCounter == 0) {
-                        String checkComment = stringCellValue.substring(0, 3);
-                        if (isComment(checkComment)) {
-                            comments.add(stringCellValue.substring(3));
-                        } else {
-                            componentName = stringCellValue;
+                while (cellIterator.hasNext()) {
+                    Cell currentCell = cellIterator.next();
+                    stringCellValue = convertCellValueToString(currentCell);
+                    if (isVersion(stringCellValue)) {
+                        breakWhile = true;
+                        break;
+                    }
+
+                    if (isNotBlank(stringCellValue)) {
+                        // Setting name of the component
+                        if (cellCounter == 0) {
+                            String checkComment = stringCellValue.substring(0, 3);
+                            if (isComment(checkComment)) {
+                                comments.add(stringCellValue.substring(3));
+                            } else {
+                                componentName = stringCellValue;
+                            }
                         }
+                        // Setting version of the embedded component
+                        if (cellCounter == 1) {
+                            componentVersion = stringCellValue;
+                        }
+                        // Setting description of the embedded component and creating a new EmbeddedComponent
+                        // object
+                        if (cellCounter == 2) {
+                            componentLicense = stringCellValue;
+                            Component component = new Component(componentName, componentVersion, componentLicense);
+                            components.add(component);
+                        }
+                        cellCounter++;
                     }
-                    // Setting version of the embedded component
-                    if (cellCounter == 1) {
-                        componentVersion = stringCellValue;
-                    }
-                    // Setting description of the embedded component and creating a new EmbeddedComponent
-                    // object
-                    if (cellCounter == 2) {
-                        componentLicense = stringCellValue;
-                        Component component = new Component(componentName, componentVersion, componentLicense);
-                        components.add(component);
-                    }
-                    cellCounter++;
                 }
             }
             if (breakWhile) {
@@ -439,6 +451,47 @@ public class ExcelModel {
             }
         }
         return components;
+    }
+
+    /**
+     * @param version
+     * @param sheet
+     * @param cr
+     */
+    private Integer getRowNumberOfCurrentComponentVersion(String version, Sheet sheet) {
+        // Column where the components should be stated
+        CellReference cr = new CellReference("D1");
+        for (int i = 0; i < sheet.getLastRowNum(); i++) {
+            Row currentRow = sheet.getRow(i);
+            if (currentRow != null) {
+                Cell cell = currentRow.getCell(cr.getCol());
+                if (cell != null) {
+                    // Found column and there is value in the cell.
+                    String cellValue = cell.getStringCellValue();
+                    if (cellValue.equals(version)) {
+                        return i + 1;
+                    }
+                }
+            }
+        }
+        return sheet.getLastRowNum();
+    }
+
+    /**
+     * @param version
+     * @param stringCellValue
+     * @return
+     */
+    private boolean isNotCurrentVersion(String version, String stringCellValue) {
+        return !stringCellValue.equals(version);
+    }
+
+    /**
+     * @param stringCellValue
+     * @return
+     */
+    private boolean isVersion(String stringCellValue) {
+        return stringCellValue.subSequence(0, 3).toString().matches("^[v][0-9].");
     }
 
     /**
