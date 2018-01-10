@@ -22,6 +22,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class ExcelModel {
 
+    /**
+     * Here is stated the column and row where the components version are stated
+     */
+    private static final String CELL_OF_COMPONENTS = "D1";
+
     private static final String PLUG_INS = "Plug-ins";
 
     private static final String MAIN_APPLICATIONS = "Main Applications";
@@ -454,13 +459,15 @@ public class ExcelModel {
     }
 
     /**
+     * Tries to find the row number where the current version components are stated
      * @param version
+     *            version of the current plugIn
      * @param sheet
-     * @param cr
+     *            The sheet of the current plugIn
      */
     private Integer getRowNumberOfCurrentComponentVersion(String version, Sheet sheet) {
         // Column where the components should be stated
-        CellReference cr = new CellReference("D1");
+        CellReference cr = new CellReference(CELL_OF_COMPONENTS);
         for (int i = 0; i < sheet.getLastRowNum(); i++) {
             Row currentRow = sheet.getRow(i);
             if (currentRow != null) {
