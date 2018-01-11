@@ -84,11 +84,11 @@ public class LicenseController {
         context = report.createContext();
         setContextData();
 
-        String pathFile = selectedDocFile.getParent();
+        String pathFile = userView.getSelectedGenerationFolder().getCanonicalPath();
 
         // Generate report by merging Java model with the DOC
-        File outputFile = new File(pathFile + "\\OutputDoc.docx");
-        selectedDocFile.getCanonicalPath();
+        File outputFile = new File(pathFile);
+
         OutputStream out = new FileOutputStream(outputFile);
         if (outputFile.canWrite()) {
             // write access
@@ -97,6 +97,7 @@ public class LicenseController {
             out.flush();
             out.close();
             System.out.println("File succesfully generated");
+            System.out.println("-------------------------------------------------------------");
         } else {
             // no write access
             System.out.println("No write acces");
