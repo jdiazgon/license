@@ -46,6 +46,8 @@ public class UserView implements ActionListener {
 
     LicenseController licenseController;
 
+    private String currentDirectory = System.getProperty("user.home");
+
     public UserView() {
         // Creating new frame
         JFrame frame = new JFrame("LicenseApp");
@@ -106,15 +108,16 @@ public class UserView implements ActionListener {
         JTextAreaOutputStream out = new JTextAreaOutputStream(textArea);
         System.setOut(new PrintStream(out));
         System.setErr(new PrintStream(out));
+
+        currentDirectory = currentDirectory + "/Desktop";
     }
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        String userDir = System.getProperty("user.home");
         String buttonName = actionEvent.getActionCommand();
 
         if (buttonName.equals("Open Excel")) {
-            JFileChooser fileChooser = new JFileChooser(userDir + "/Desktop");
+            JFileChooser fileChooser = new JFileChooser(currentDirectory);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("XLS files", "xls", "xlsx");
             fileChooser.setFileFilter(filter);
 
@@ -122,21 +125,23 @@ public class UserView implements ActionListener {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 System.out.println("-------------------------------------------------------------");
                 System.out.println("You chose to open this file: " + fileChooser.getSelectedFile().getName());
+                currentDirectory = fileChooser.getCurrentDirectory().getAbsolutePath();
                 setSelectedExcelFile(fileChooser.getSelectedFile());
-                licenseController.updateExcelModel(selectedExcelFile);
+                enableDocButton();
             }
         } else if (buttonName.equals("Open Doc")) {
-            JFileChooser fileChooser = new JFileChooser(userDir + "/Desktop");
+            JFileChooser fileChooser = new JFileChooser(currentDirectory);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("MS Word file(.docx)", "docx");
             fileChooser.setFileFilter(filter);
             int returnVal = fileChooser.showOpenDialog(masterPanel);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 System.out.println("You chose to open this file: " + fileChooser.getSelectedFile().getName());
+                currentDirectory = fileChooser.getCurrentDirectory().getAbsolutePath();
                 setSelectedDocFile(fileChooser.getSelectedFile());
                 enableGenerateButton();
             }
         } else if (buttonName.equals("Generate")) {
-            JFileChooser folderChooser = new JFileChooser(userDir + "/Desktop");
+            JFileChooser folderChooser = new JFileChooser(currentDirectory);
             folderChooser.setDialogTitle("Select a location for generation");
 
             // Default generated file name
@@ -148,7 +153,9 @@ public class UserView implements ActionListener {
                 // Checks if the file is a doc, and then saves it
                 setSelectedGenerationFolder(checkFileForExtension(chosenFile));
                 System.out.println("You chose to store it on : " + folderChooser.getSelectedFile());
+                currentDirectory = folderChooser.getCurrentDirectory().getAbsolutePath();
                 try {
+                    licenseController.updateExcelModel(selectedExcelFile);
                     licenseController.generateDocFile(selectedDocFile);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block

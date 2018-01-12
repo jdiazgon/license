@@ -56,8 +56,6 @@ public class LicenseController {
                 .println("Embedded components contains: " + excelModel.getEmbeddedComponents().size() + " elements.");
             System.out.println("Plugins contains: " + excelModel.getPlugIns().size() + " elements.");
             System.out.println();
-
-            enableDocButton();
         }
     }
 
